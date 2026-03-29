@@ -1,0 +1,170 @@
+/* 基础样式 */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Microsoft YaHei', sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.container {
+  text-align: center;
+  padding: 20px;
+}
+
+h1 {
+  color: #fff;
+  margin-bottom: 20px;
+  font-size: 2.5rem;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* 游戏信息区域 */
+.game-info {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.current-player {
+  background: rgba(255, 255, 255, 0.9);
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  color: #333;
+}
+
+.btn {
+  background: #4CAF50;
+  color: white;
+  border: none;
+  padding: 10px 25px;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.btn:hover {
+  background: #45a049;
+}
+
+/* 棋盘样式 */
+.board {
+  display: inline-grid;
+  grid-template-columns: repeat(15, 40px);
+  grid-template-rows: repeat(15, 40px);
+  background: #dcb35c;
+  padding: 10px;
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.cell {
+  width: 40px;
+  height: 40px;
+  position: relative;
+  cursor: pointer;
+}
+
+/* 棋盘网格线 */
+.cell::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: #8b7355;
+}
+
+.cell::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: #8b7355;
+}
+
+/* 边缘格子的网格线处理 */
+.cell[data-x="0"]::after {
+  left: 50%;
+}
+.cell[data-x="14"]::after {
+  right: 50%;
+  left: auto;
+}
+.cell[data-y="0"]::before {
+  top: 50%;
+}
+.cell[data-y="14"]::before {
+  bottom: 50%;
+  top: auto;
+}
+
+/* 星位点 */
+.star {
+  background: radial-gradient(circle, #8b7355 3px, transparent 3px);
+}
+
+/* 棋子样式 */
+.piece {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  z-index: 1;
+}
+
+.piece.black {
+  background: radial-gradient(circle at 30% 30%, #555, #000);
+  box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.piece.white {
+  background: radial-gradient(circle at 30% 30%, #fff, #ccc);
+  box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* 悬停效果 */
+.cell:hover::before,
+.cell:hover::after {
+  background: #ff6b6b;
+}
+
+/* 消息提示 */
+.message {
+  margin-top: 20px;
+  font-size: 1.5rem;
+  color: #fff;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  min-height: 40px;
+}
+
+/* 获胜棋子高亮 */
+.piece.winning {
+  animation: pulse 0.5s ease-in-out infinite alternate;
+}
+
+@keyframes pulse {
+  from {
+    box-shadow: 0 0 5px #ff0, 0 0 10px #ff0;
+  }
+  to {
+    box-shadow: 0 0 15px #ff0, 0 0 25px #ff0;
+  }
+}

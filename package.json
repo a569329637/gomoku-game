@@ -1,0 +1,17 @@
+{
+  "name": "gomoku-game",
+  "version": "1.0.0",
+  "description": "五子棋小游戏",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "keywords": ["gomoku", "game"],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "vite": "^5.0.0"
+  }
+}
