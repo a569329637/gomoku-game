@@ -165,6 +165,18 @@ h1 {
   cursor: not-allowed;
 }
 
+/* 音效按钮 */
+.btn-sound {
+  background: #9c27b0;
+  padding: 10px 15px;
+  font-size: 1.2rem;
+  min-width: 45px;
+}
+
+.btn-sound:hover {
+  background: #7b1fa2;
+}
+
 /* 棋盘样式 */
 .board {
   display: inline-grid;
