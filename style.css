@@ -152,6 +152,19 @@ h1 {
   background: #1976D2;
 }
 
+.btn-warning {
+  background: #ff9800;
+}
+
+.btn-warning:hover {
+  background: #e68a00;
+}
+
+.btn-warning:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
 /* 棋盘样式 */
 .board {
   display: inline-grid;
