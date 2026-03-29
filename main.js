@@ -1,6 +1,7 @@
 /**
  * 五子棋游戏核心逻辑
  * 支持 AI 对战模式
+ * 支持暗黑模式主题切换
  */
 
 // 棋盘配置
@@ -8,6 +9,187 @@ const BOARD_SIZE = 15;
 const EMPTY = 0;
 const BLACK = 1;
 const WHITE = 2;
+
+// ==================== 主题管理器 ====================
+
+/**
+ * 主题管理器
+ * 负责主题切换、保存偏好、跟随系统主题
+ */
+const ThemeManager = {
+  // 存储键名
+  STORAGE_KEY: 'gomoku_theme',
+  
+  // 当前主题
+  currentTheme: 'light',
+  
+  // 系统主题媒体查询
+  mediaQuery: null,
+
+  /**
+   * 初始化主题
+   * 优先级：用户偏好 > 系统主题 > 默认亮色
+   */
+  init() {
+    // 获取系统主题媒体查询
+    this.mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    
+    // 获取用户保存的主题偏好
+    const savedTheme = localStorage.getItem(this.STORAGE_KEY);
+    
+    if (savedTheme) {
+      // 如果有用户偏好，使用用户偏好
+      this.setTheme(savedTheme, false);
+    } else {
+      // 否则跟随系统主题
+      this.setTheme(this.mediaQuery.matches ? 'dark' : 'light', false);
+    }
+    
+    // 监听系统主题变化
+    this.mediaQuery.addEventListener('change', (e) => {
+      // 只有当用户没有设置偏好时才跟随系统
+      if (!localStorage.getItem(this.STORAGE_KEY)) {
+        this.setTheme(e.matches ? 'dark' : 'light', false);
+      }
+    });
+    
+    // 绑定主题切换按钮事件
+    const toggleBtn = document.getElementById('theme-toggle');
+    if (toggleBtn) {
+      toggleBtn.addEventListener('click', () => this.toggle());
+    }
+  },
+
+  /**
+   * 设置主题
+   * @param {string} theme - 主题名称 ('light' 或 'dark')
+   * @param {boolean} save - 是否保存到 localStorage
+   */
+  setTheme(theme, save = true) {
+    this.currentTheme = theme;
+    
+    // 更新 HTML 属性
+    if (theme === 'dark') {
+      document.documentElement.setAttribute('data-theme', 'dark');
+    } else {
+      document.documentElement.removeAttribute('data-theme');
+    }
+    
+    // 保存用户偏好
+    if (save) {
+      localStorage.setItem(this.STORAGE_KEY, theme);
+    }
+  },
+
+  /**
+   * 切换主题
+   */
+  toggle() {
+    const newTheme = this.currentTheme === 'light' ? 'dark' : 'light';
+    this.setTheme(newTheme);
+  },
+
+  /**
+   * 获取当前主题
+   * @returns {string} 当前主题名称
+   */
+  getTheme() {
+    return this.currentTheme;
+  }
+};
+
+// ==================== 音效管理器 ====================
+
+/**
+ * 音效管理器
+ */
+const SoundManager = {
+  audioContext: null,
+  enabled: true,
+
+  /**
+   * 初始化 AudioContext
+   */
+  init() {
+    if (!this.audioContext) {
+      this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    // 确保 AudioContext 处于运行状态
+    if (this.audioContext.state === 'suspended') {
+      this.audioContext.resume();
+    }
+  },
+
+  /**
+   * 播放单个音调
+   * @param {number} frequency - 频率 (Hz)
+   * @param {number} duration - 持续时间 (秒)
+   * @param {string} type - 波形类型
+   * @param {number} volume - 音量 (0-1)
+   */
+  playTone(frequency, duration, type = 'sine', volume = 0.3) {
+    if (!this.enabled || !this.audioContext) return;
+
+    const oscillator = this.audioContext.createOscillator();
+    const gainNode = this.audioContext.createGain();
+
+    oscillator.type = type;
+    oscillator.frequency.setValueAtTime(frequency, this.audioContext.currentTime);
+
+    gainNode.gain.setValueAtTime(volume, this.audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + duration);
+
+    oscillator.connect(gainNode);
+    gainNode.connect(this.audioContext.destination);
+
+    oscillator.start(this.audioContext.currentTime);
+    oscillator.stop(this.audioContext.currentTime + duration);
+  },
+
+  /**
+   * 播放落子音效 (800Hz 正弦波)
+   */
+  playMove() {
+    this.playTone(800, 0.08, 'sine', 0.2);
+  },
+
+  /**
+   * 播放获胜音效 (上升三音阶旋律 C5-E5-G5)
+   */
+  playWin() {
+    if (!this.enabled || !this.audioContext) return;
+
+    // C5 = 523.25Hz, E5 = 659.25Hz, G5 = 783.99Hz
+    const notes = [523.25, 659.25, 783.99];
+    notes.forEach((freq, index) => {
+      setTimeout(() => {
+        this.playTone(freq, 0.2, 'sine', 0.3);
+      }, index * 150);
+    });
+  },
+
+  /**
+   * 播放平局音效 (下降双音)
+   */
+  playDraw() {
+    if (!this.enabled || !this.audioContext) return;
+
+    // 下降双音: 400Hz -> 350Hz
+    this.playTone(400, 0.2, 'sine', 0.25);
+    setTimeout(() => {
+      this.playTone(350, 0.3, 'sine', 0.2);
+    }, 150);
+  },
+
+  /**
+   * 切换音效开关
+   * @returns {boolean} 当前音效状态
+   */
+  toggle() {
+    this.enabled = !this.enabled;
+    return this.enabled;
+  }
+};
 
 // 存档相关常量
 const SAVE_KEY = 'gomoku_save';
@@ -50,6 +232,7 @@ const gameArea = document.getElementById('game-area');
 const difficultySelection = document.getElementById('difficulty-selection');
 const aiThinkingElement = document.getElementById('ai-thinking');
 const restorePrompt = document.getElementById('restore-prompt');
+const soundToggleBtn = document.getElementById('sound-toggle');
 
 // ==================== 存档相关函数 ====================
 
@@ -210,6 +393,9 @@ const starPoints = [
  * 初始化游戏
  */
 function initGame() {
+  // 初始化音效系统
+  SoundManager.init();
+
   // 清除存档（开始新游戏时）
   clearSave();
 
@@ -239,6 +425,7 @@ function initGame() {
   }
 
   updatePlayerDisplay();
+  updateSoundButton();
 }
 
 /**
@@ -266,6 +453,9 @@ async function makeMove(x, y) {
   moveHistory.push({ x, y, player: currentPlayer });
   renderPiece(x, y, currentPlayer);
 
+  // 播放落子音效
+  SoundManager.playMove();
+
   const winningPieces = checkWin(x, y);
   if (winningPieces) {
     gameOver = true;
@@ -276,6 +466,8 @@ async function makeMove(x, y) {
       : `${winner} 获胜！`;
     // 游戏结束时清除存档
     clearSave();
+    // 播放获胜音效
+    SoundManager.playWin();
     return;
   }
 
@@ -284,6 +476,8 @@ async function makeMove(x, y) {
     messageElement.textContent = '平局！';
     // 游戏结束时清除存档
     clearSave();
+    // 播放平局音效
+    SoundManager.playDraw();
     return;
   }
 
@@ -603,6 +797,15 @@ function updatePlayerDisplay() {
 }
 
 /**
+ * 更新音效按钮显示
+ */
+function updateSoundButton() {
+  if (soundToggleBtn) {
+    soundToggleBtn.textContent = SoundManager.enabled ? '🔊' : '🔇';
+  }
+}
+
+/**
  * 检查获胜
  */
 function checkWin(x, y) {
@@ -733,7 +936,8 @@ function undoLastMove() {
   currentPlayer = lastMove.player;
 }
 
-// 绑定事件
+// ==================== 事件绑定 ====================
+
 document.getElementById('pvp-mode').addEventListener('click', () => {
   gameMode = 'pvp';
   showGameArea();
@@ -764,6 +968,19 @@ document.getElementById('undo').addEventListener('click', undoMove);
 // 恢复游戏相关事件
 document.getElementById('restore-btn').addEventListener('click', restoreGame);
 document.getElementById('new-game-btn').addEventListener('click', discardSave);
+
+// 音效开关按钮事件
+if (soundToggleBtn) {
+  soundToggleBtn.addEventListener('click', () => {
+    SoundManager.toggle();
+    updateSoundButton();
+  });
+}
+
+// ==================== 初始化 ====================
+
+// 初始化主题管理器
+ThemeManager.init();
 
 // 初始化：检查是否有存档
 if (hasValidSave()) {
