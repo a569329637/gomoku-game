@@ -1,6 +1,7 @@
 /**
  * 五子棋游戏核心逻辑
  * 支持 AI 对战模式
+ * 支持移动端响应式布局
  */
 
 // 棋盘配置
@@ -8,6 +9,13 @@ const BOARD_SIZE = 15;
 const EMPTY = 0;
 const BLACK = 1;
 const WHITE = 2;
+
+// 棋盘尺寸配置
+const CELL_SIZE_CONFIG = {
+  min: 22,   // 最小格子尺寸（像素）
+  max: 40,   // 最大格子尺寸（像素）
+  default: 40 // 默认格子尺寸
+};
 
 // 存档相关常量
 const SAVE_KEY = 'gomoku_save';
@@ -771,3 +779,86 @@ if (hasValidSave()) {
 } else {
   showModeSelection();
 }
+
+// ==================== 移动端响应式布局 ====================
+
+/**
+ * 计算并设置棋盘格子尺寸
+ * 根据屏幕宽度动态调整，确保棋盘完整显示
+ */
+function calculateCellSize() {
+  // 获取可用宽度（减去容器内边距）
+  const containerPadding = 40; // 容器两侧内边距
+  const boardPadding = 20; // 棋盘内边距
+  const availableWidth = window.innerWidth - containerPadding - boardPadding;
+
+  // 计算格子尺寸（15个格子）
+  let cellSize = Math.floor(availableWidth / BOARD_SIZE);
+
+  // 限制在最小和最大尺寸范围内
+  cellSize = Math.max(CELL_SIZE_CONFIG.min, Math.min(CELL_SIZE_CONFIG.max, cellSize));
+
+  // 计算棋子尺寸（比格子小一点）
+  const pieceSize = Math.floor(cellSize * 0.85);
+
+  // 设置 CSS 变量
+  document.documentElement.style.setProperty('--cell-size', `${cellSize}px`);
+  document.documentElement.style.setProperty('--piece-size', `${pieceSize}px`);
+  document.documentElement.style.setProperty('--board-padding', `${Math.floor(cellSize * 0.25)}px`);
+}
+
+/**
+ * 初始化响应式布局
+ */
+function initResponsiveLayout() {
+  // 首次计算尺寸
+  calculateCellSize();
+
+  // 监听窗口大小变化
+  let resizeTimeout;
+  window.addEventListener('resize', () => {
+    // 防抖处理
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(calculateCellSize, 100);
+  });
+
+  // 监听屏幕方向变化
+  window.addEventListener('orientationchange', () => {
+    // 方向变化后延迟计算，确保浏览器完成重绘
+    setTimeout(calculateCellSize, 200);
+  });
+}
+
+/**
+ * 优化触摸事件
+ * 防止双击缩放和长按弹出菜单
+ */
+function initTouchOptimizations() {
+  // 阻止双击缩放
+  let lastTouchEnd = 0;
+  document.addEventListener('touchend', (e) => {
+    const now = Date.now();
+    if (now - lastTouchEnd <= 300) {
+      e.preventDefault();
+    }
+    lastTouchEnd = now;
+  }, { passive: false });
+
+  // 阻止长按弹出菜单
+  boardElement.addEventListener('contextmenu', (e) => {
+    e.preventDefault();
+    return false;
+  });
+
+  // 优化触摸滚动
+  document.body.addEventListener('touchmove', (e) => {
+    // 允许正常滚动，但防止过度滚动
+    if (e.target.closest('.board')) {
+      e.preventDefault();
+    }
+  }, { passive: false });
+}
+
+// 初始化响应式布局和触摸优化
+initResponsiveLayout();
+initTouchOptimizations();
