@@ -16,6 +16,7 @@ let gameOver = false;
 let gameMode = 'pvp'; // 'pvp' 或 'pve'
 let difficulty = 'medium'; // 'easy', 'medium', 'hard'
 let aiPlayer = WHITE; // AI 执白棋
+let moveHistory = []; // 落子历史记录
 
 // AI 搜索深度配置
 const AI_DEPTH = {
@@ -60,6 +61,7 @@ function initGame() {
   board = Array(BOARD_SIZE).fill(null).map(() => Array(BOARD_SIZE).fill(EMPTY));
   currentPlayer = BLACK;
   gameOver = false;
+  moveHistory = []; // 清空历史记录
   messageElement.textContent = '';
   aiThinkingElement.classList.add('hidden');
 
@@ -105,6 +107,8 @@ async function handleCellClick(x, y) {
  */
 async function makeMove(x, y) {
   board[y][x] = currentPlayer;
+  // 记录落子历史
+  moveHistory.push({ x, y, player: currentPlayer });
   renderPiece(x, y, currentPlayer);
 
   const winningPieces = checkWin(x, y);
@@ -514,6 +518,59 @@ function showModeSelection() {
   difficultySelection.classList.add('hidden');
 }
 
+/**
+ * 悔棋功能
+ * 人机模式下撤销玩家和 AI 的落子，双人模式下只撤销一步
+ */
+function undoMove() {
+  // 检查是否可以悔棋
+  if (moveHistory.length === 0 || gameOver) {
+    return;
+  }
+
+  // 人机模式：撤销两步（玩家和 AI 各一步）
+  if (gameMode === 'pve') {
+    // 如果最后一步是 AI 下的，需要撤销两步
+    if (moveHistory.length >= 2) {
+      // 撤销 AI 的落子
+      undoLastMove();
+      // 撤销玩家的落子
+      undoLastMove();
+    } else if (moveHistory.length === 1) {
+      // 只有一步（玩家下的），撤销这一步
+      undoLastMove();
+    }
+  } else {
+    // 双人模式：只撤销一步
+    undoLastMove();
+  }
+
+  // 清除消息
+  messageElement.textContent = '';
+}
+
+/**
+ * 撤销最后一步落子
+ */
+function undoLastMove() {
+  if (moveHistory.length === 0) return;
+
+  const lastMove = moveHistory.pop();
+
+  // 清除棋盘数据
+  board[lastMove.y][lastMove.x] = EMPTY;
+
+  // 移除 DOM 中的棋子
+  const cell = boardElement.querySelector(`[data-x="${lastMove.x}"][data-y="${lastMove.y}"]`);
+  const piece = cell.querySelector('.piece');
+  if (piece) {
+    piece.remove();
+  }
+
+  // 恢复当前玩家
+  currentPlayer = lastMove.player;
+}
+
 // 绑定事件
 document.getElementById('pvp-mode').addEventListener('click', () => {
   gameMode = 'pvp';
@@ -537,6 +594,9 @@ document.querySelectorAll('.difficulty-btn').forEach(btn => {
 restartButton.addEventListener('click', initGame);
 
 document.getElementById('back-to-menu').addEventListener('click', showModeSelection);
+
+// 悔棋按钮事件
+document.getElementById('undo').addEventListener('click', undoMove);
 
 // 初始化显示模式选择界面
 showModeSelection();
