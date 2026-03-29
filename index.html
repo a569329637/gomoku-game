@@ -9,12 +9,35 @@
 <body>
   <div class="container">
     <h1>五子棋</h1>
-    <div class="game-info">
-      <div class="current-player">当前玩家: <span id="player">黑棋</span></div>
-      <button id="restart" class="btn">重新开始</button>
+
+    <!-- 游戏模式选择界面 -->
+    <div id="mode-selection" class="mode-selection">
+      <h2>选择游戏模式</h2>
+      <div class="mode-buttons">
+        <button id="pvp-mode" class="btn mode-btn">双人对弈</button>
+        <button id="pve-mode" class="btn mode-btn">人机对战</button>
+      </div>
+      <div id="difficulty-selection" class="difficulty-selection hidden">
+        <h3>选择难度</h3>
+        <div class="difficulty-buttons">
+          <button class="btn difficulty-btn" data-difficulty="easy">简单</button>
+          <button class="btn difficulty-btn" data-difficulty="medium">中等</button>
+          <button class="btn difficulty-btn" data-difficulty="hard">困难</button>
+        </div>
+      </div>
     </div>
-    <div id="board" class="board"></div>
-    <div id="message" class="message"></div>
+
+    <!-- 游戏界面 -->
+    <div id="game-area" class="game-area hidden">
+      <div class="game-info">
+        <div class="current-player">当前玩家: <span id="player">黑棋</span></div>
+        <div id="ai-thinking" class="ai-thinking hidden">AI 思考中...</div>
+        <button id="restart" class="btn">重新开始</button>
+        <button id="back-to-menu" class="btn btn-secondary">返回菜单</button>
+      </div>
+      <div id="board" class="board"></div>
+      <div id="message" class="message"></div>
+    </div>
   </div>
   <script type="module" src="main.js"></script>
 </body>

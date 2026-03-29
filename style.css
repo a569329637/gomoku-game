@@ -26,13 +26,81 @@ h1 {
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
 }
 
+/* 模式选择界面 */
+.mode-selection {
+  background: rgba(255, 255, 255, 0.95);
+  padding: 40px;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.mode-selection h2 {
+  color: #333;
+  margin-bottom: 30px;
+  font-size: 1.8rem;
+}
+
+.mode-selection h3 {
+  color: #555;
+  margin-bottom: 20px;
+  font-size: 1.3rem;
+}
+
+.mode-buttons, .difficulty-buttons {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.mode-btn {
+  padding: 15px 40px;
+  font-size: 1.2rem;
+}
+
+.difficulty-selection {
+  margin-top: 30px;
+  padding-top: 30px;
+  border-top: 1px solid #eee;
+}
+
+.difficulty-btn {
+  padding: 12px 30px;
+  font-size: 1rem;
+}
+
+.difficulty-btn[data-difficulty="easy"] {
+  background: #4CAF50;
+}
+
+.difficulty-btn[data-difficulty="easy"]:hover {
+  background: #45a049;
+}
+
+.difficulty-btn[data-difficulty="medium"] {
+  background: #ff9800;
+}
+
+.difficulty-btn[data-difficulty="medium"]:hover {
+  background: #e68a00;
+}
+
+.difficulty-btn[data-difficulty="hard"] {
+  background: #f44336;
+}
+
+.difficulty-btn[data-difficulty="hard"]:hover {
+  background: #da190b;
+}
+
 /* 游戏信息区域 */
 .game-info {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 20px;
+  gap: 15px;
   margin-bottom: 20px;
+  flex-wrap: wrap;
 }
 
 .current-player {
@@ -43,6 +111,20 @@ h1 {
   color: #333;
 }
 
+.ai-thinking {
+  background: rgba(255, 193, 7, 0.9);
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  color: #333;
+  animation: blink 1s ease-in-out infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
 .btn {
   background: #4CAF50;
   color: white;
@@ -51,11 +133,23 @@ h1 {
   border-radius: 8px;
   font-size: 1rem;
   cursor: pointer;
-  transition: background 0.3s;
+  transition: background 0.3s, transform 0.1s;
 }
 
 .btn:hover {
   background: #45a049;
+}
+
+.btn:active {
+  transform: scale(0.98);
+}
+
+.btn-secondary {
+  background: #2196F3;
+}
+
+.btn-secondary:hover {
+  background: #1976D2;
 }
 
 /* 棋盘样式 */
@@ -140,6 +234,11 @@ h1 {
   box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
 }
 
+/* AI 最后落子标记 */
+.piece.ai-last {
+  box-shadow: 0 0 10px #ff0, 0 0 20px #ff0, 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
 /* 悬停效果 */
 .cell:hover::before,
 .cell:hover::after {
@@ -167,4 +266,9 @@ h1 {
   to {
     box-shadow: 0 0 15px #ff0, 0 0 25px #ff0;
   }
+}
+
+/* 隐藏类 */
+.hidden {
+  display: none !important;
 }
