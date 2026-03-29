@@ -12,17 +12,59 @@
   --cell-size: 40px;
   --piece-size: 34px;
   --board-padding: 10px;
+
+  /* 主题颜色变量 */
+  --bg-gradient-start: #667eea;
+  --bg-gradient-end: #764ba2;
+  --text-primary: #333;
+  --text-secondary: #555;
+  --text-muted: #666;
+  --card-bg: rgba(255, 255, 255, 0.95);
+  --card-shadow: rgba(0, 0, 0, 0.3);
+  --board-bg: #dcb35c;
+  --board-line: #8b7355;
+  --border-color: #eee;
+  --btn-primary: #4CAF50;
+  --btn-primary-hover: #45a049;
+  --btn-secondary: #2196F3;
+  --btn-secondary-hover: #1976D2;
+  --btn-warning: #ff9800;
+  --btn-warning-hover: #e68a00;
+  --message-text: #fff;
+}
+
+/* 暗黑主题 */
+[data-theme="dark"] {
+  --bg-gradient-start: #1a1a2e;
+  --bg-gradient-end: #16213e;
+  --text-primary: #e0e0e0;
+  --text-secondary: #b0b0b0;
+  --text-muted: #888;
+  --card-bg: rgba(30, 30, 50, 0.95);
+  --card-shadow: rgba(0, 0, 0, 0.5);
+  --board-bg: #b8964a;
+  --board-line: #6b5344;
+  --border-color: #333;
+  --btn-primary: #66BB6A;
+  --btn-primary-hover: #81C784;
+  --btn-secondary: #42A5F5;
+  --btn-secondary-hover: #64B5F6;
+  --btn-warning: #FFA726;
+  --btn-warning-hover: #FFB74D;
+  --message-text: #e0e0e0;
 }
 
 body {
   font-family: 'Microsoft YaHei', sans-serif;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
   min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
   /* 移动端优化：防止过度滚动 */
   overscroll-behavior: none;
+  /* 主题切换过渡动画 */
+  transition: background 0.3s ease;
 }
 
 .container {
@@ -31,7 +73,7 @@ body {
 }
 
 h1 {
-  color: #fff;
+  color: var(--message-text);
   margin-bottom: 20px;
   font-size: 2.5rem;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
@@ -39,20 +81,21 @@ h1 {
 
 /* 模式选择界面 */
 .mode-selection {
-  background: rgba(255, 255, 255, 0.95);
+  background: var(--card-bg);
   padding: 40px;
   border-radius: 16px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 10px 30px var(--card-shadow);
+  transition: background 0.3s ease, box-shadow 0.3s ease;
 }
 
 .mode-selection h2 {
-  color: #333;
+  color: var(--text-primary);
   margin-bottom: 30px;
   font-size: 1.8rem;
 }
 
 .mode-selection h3 {
-  color: #555;
+  color: var(--text-secondary);
   margin-bottom: 20px;
   font-size: 1.3rem;
 }
@@ -72,7 +115,7 @@ h1 {
 .difficulty-selection {
   margin-top: 30px;
   padding-top: 30px;
-  border-top: 1px solid #eee;
+  border-top: 1px solid var(--border-color);
 }
 
 .difficulty-btn {
@@ -81,19 +124,19 @@ h1 {
 }
 
 .difficulty-btn[data-difficulty="easy"] {
-  background: #4CAF50;
+  background: var(--btn-primary);
 }
 
 .difficulty-btn[data-difficulty="easy"]:hover {
-  background: #45a049;
+  background: var(--btn-primary-hover);
 }
 
 .difficulty-btn[data-difficulty="medium"] {
-  background: #ff9800;
+  background: var(--btn-warning);
 }
 
 .difficulty-btn[data-difficulty="medium"]:hover {
-  background: #e68a00;
+  background: var(--btn-warning-hover);
 }
 
 .difficulty-btn[data-difficulty="hard"] {
@@ -115,11 +158,12 @@ h1 {
 }
 
 .current-player {
-  background: rgba(255, 255, 255, 0.9);
+  background: var(--card-bg);
   padding: 10px 20px;
   border-radius: 8px;
   font-size: 1.1rem;
-  color: #333;
+  color: var(--text-primary);
+  transition: background 0.3s ease, color 0.3s ease;
 }
 
 .ai-thinking {
@@ -127,7 +171,7 @@ h1 {
   padding: 10px 20px;
   border-radius: 8px;
   font-size: 1.1rem;
-  color: #333;
+  color: var(--text-primary);
   animation: blink 1s ease-in-out infinite;
 }
 
@@ -137,7 +181,7 @@ h1 {
 }
 
 .btn {
-  background: #4CAF50;
+  background: var(--btn-primary);
   color: white;
   border: none;
   padding: 10px 25px;
@@ -148,7 +192,7 @@ h1 {
 }
 
 .btn:hover {
-  background: #45a049;
+  background: var(--btn-primary-hover);
 }
 
 .btn:active {
@@ -156,19 +200,19 @@ h1 {
 }
 
 .btn-secondary {
-  background: #2196F3;
+  background: var(--btn-secondary);
 }
 
 .btn-secondary:hover {
-  background: #1976D2;
+  background: var(--btn-secondary-hover);
 }
 
 .btn-warning {
-  background: #ff9800;
+  background: var(--btn-warning);
 }
 
 .btn-warning:hover {
-  background: #e68a00;
+  background: var(--btn-warning-hover);
 }
 
 .btn-warning:disabled {
@@ -181,13 +225,14 @@ h1 {
   display: inline-grid;
   grid-template-columns: repeat(15, var(--cell-size));
   grid-template-rows: repeat(15, var(--cell-size));
-  background: #dcb35c;
+  background: var(--board-bg);
   padding: var(--board-padding);
   border-radius: 8px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 10px 30px var(--card-shadow);
   /* 移动端优化：防止选择文本 */
   user-select: none;
   -webkit-user-select: none;
+  transition: background 0.3s ease;
 }
 
 .cell {
@@ -207,7 +252,7 @@ h1 {
   left: 0;
   right: 0;
   height: 1px;
-  background: #8b7355;
+  background: var(--board-line);
 }
 
 .cell::after {
@@ -217,7 +262,7 @@ h1 {
   top: 0;
   bottom: 0;
   width: 1px;
-  background: #8b7355;
+  background: var(--board-line);
 }
 
 /* 边缘格子的网格线处理 */
@@ -238,7 +283,7 @@ h1 {
 
 /* 星位点 */
 .star {
-  background: radial-gradient(circle, #8b7355 3px, transparent 3px);
+  background: radial-gradient(circle, var(--board-line) 3px, transparent 3px);
 }
 
 /* 棋子样式 */
@@ -278,7 +323,7 @@ h1 {
 .message {
   margin-top: 20px;
   font-size: 1.5rem;
-  color: #fff;
+  color: var(--message-text);
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
   min-height: 40px;
 }
@@ -317,21 +362,21 @@ h1 {
 }
 
 .restore-prompt-content {
-  background: rgba(255, 255, 255, 0.95);
+  background: var(--card-bg);
   padding: 30px 40px;
   border-radius: 16px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 10px 30px var(--card-shadow);
   text-align: center;
 }
 
 .restore-prompt-content h2 {
-  color: #333;
+  color: var(--text-primary);
   margin-bottom: 15px;
   font-size: 1.5rem;
 }
 
 .restore-prompt-content p {
-  color: #666;
+  color: var(--text-muted);
   margin-bottom: 25px;
   font-size: 1rem;
 }
@@ -514,7 +559,7 @@ h1 {
   /* 移除悬停效果（触摸设备不支持） */
   .cell:hover::before,
   .cell:hover::after {
-    background: #8b7355;
+    background: var(--board-line);
   }
 
   /* 触摸设备上的棋子按下效果 */
@@ -571,4 +616,53 @@ h1 {
     font-size: 1.3rem;
     margin-bottom: 15px;
   }
+}
+
+/* ==================== 主题切换按钮样式 ==================== */
+
+/* 标题行布局 */
+.header-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.header-row h1 {
+  margin-bottom: 0;
+}
+
+/* 主题切换按钮 */
+.btn-theme-toggle {
+  background: rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  font-size: 1.3rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-theme-toggle:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.1);
+}
+
+.btn-theme-toggle:active {
+  transform: scale(0.95);
+}
+
+/* 暗黑模式下的主题切换按钮 */
+[data-theme="dark"] .btn-theme-toggle {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+[data-theme="dark"] .btn-theme-toggle:hover {
+  background: rgba(255, 255, 255, 0.2);
 }
