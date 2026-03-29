@@ -10,6 +10,18 @@
   <div class="container">
     <h1>五子棋</h1>
 
+    <!-- 恢复游戏提示 -->
+    <div id="restore-prompt" class="restore-prompt hidden">
+      <div class="restore-prompt-content">
+        <h2>检测到未完成的游戏</h2>
+        <p>是否继续上局游戏？</p>
+        <div class="restore-buttons">
+          <button id="restore-btn" class="btn">继续上局</button>
+          <button id="new-game-btn" class="btn btn-secondary">开始新游戏</button>
+        </div>
+      </div>
+    </div>
+
     <!-- 游戏模式选择界面 -->
     <div id="mode-selection" class="mode-selection">
       <h2>选择游戏模式</h2>
