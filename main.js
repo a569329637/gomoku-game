@@ -9,6 +9,9 @@ const EMPTY = 0;
 const BLACK = 1;
 const WHITE = 2;
 
+// 存档相关常量
+const SAVE_KEY = 'gomoku_save';
+
 // 游戏状态
 let board = [];
 let currentPlayer = BLACK;
@@ -46,6 +49,155 @@ const modeSelection = document.getElementById('mode-selection');
 const gameArea = document.getElementById('game-area');
 const difficultySelection = document.getElementById('difficulty-selection');
 const aiThinkingElement = document.getElementById('ai-thinking');
+const restorePrompt = document.getElementById('restore-prompt');
+
+// ==================== 存档相关函数 ====================
+
+/**
+ * 保存游戏进度到 localStorage
+ */
+function saveGame() {
+  try {
+    const saveData = {
+      board: JSON.parse(JSON.stringify(board)), // 深拷贝
+      currentPlayer,
+      gameOver,
+      gameMode,
+      difficulty,
+      moveHistory: JSON.parse(JSON.stringify(moveHistory)), // 深拷贝
+      timestamp: Date.now()
+    };
+    localStorage.setItem(SAVE_KEY, JSON.stringify(saveData));
+  } catch (e) {
+    console.error('保存游戏失败:', e);
+  }
+}
+
+/**
+ * 从 localStorage 加载游戏进度
+ * @returns {Object|null} 存档数据或 null
+ */
+function loadGame() {
+  try {
+    const data = localStorage.getItem(SAVE_KEY);
+    if (!data) return null;
+    return JSON.parse(data);
+  } catch (e) {
+    console.error('加载游戏失败:', e);
+    return null;
+  }
+}
+
+/**
+ * 清除存档
+ */
+function clearSave() {
+  try {
+    localStorage.removeItem(SAVE_KEY);
+  } catch (e) {
+    console.error('清除存档失败:', e);
+  }
+}
+
+/**
+ * 检查是否有有效的存档
+ * @returns {boolean} 是否有有效存档
+ */
+function hasValidSave() {
+  const saveData = loadGame();
+  if (!saveData) return false;
+  // 检查游戏是否未结束且有落子记录
+  return !saveData.gameOver && saveData.moveHistory && saveData.moveHistory.length > 0;
+}
+
+/**
+ * 显示恢复游戏提示
+ */
+function showRestorePrompt() {
+  restorePrompt.classList.remove('hidden');
+}
+
+/**
+ * 隐藏恢复游戏提示
+ */
+function hideRestorePrompt() {
+  restorePrompt.classList.add('hidden');
+}
+
+/**
+ * 恢复游戏
+ */
+async function restoreGame() {
+  const saveData = loadGame();
+  if (!saveData) {
+    showModeSelection();
+    return;
+  }
+
+  // 恢复游戏状态
+  board = saveData.board;
+  currentPlayer = saveData.currentPlayer;
+  gameOver = saveData.gameOver;
+  gameMode = saveData.gameMode;
+  difficulty = saveData.difficulty;
+  moveHistory = saveData.moveHistory;
+
+  // 隐藏恢复提示，显示游戏界面
+  hideRestorePrompt();
+  showGameArea();
+
+  // 渲染棋盘
+  renderBoard();
+
+  // 更新显示
+  updatePlayerDisplay();
+
+  // 人机模式下，如果轮到 AI 则自动触发 AI 走棋
+  if (gameMode === 'pve' && currentPlayer === aiPlayer && !gameOver) {
+    await aiMove();
+  }
+}
+
+/**
+ * 放弃存档，开始新游戏
+ */
+function discardSave() {
+  clearSave();
+  hideRestorePrompt();
+  showModeSelection();
+}
+
+/**
+ * 渲染整个棋盘（用于恢复游戏时）
+ */
+function renderBoard() {
+  boardElement.innerHTML = '';
+
+  for (let y = 0; y < BOARD_SIZE; y++) {
+    for (let x = 0; x < BOARD_SIZE; x++) {
+      const cell = document.createElement('div');
+      cell.className = 'cell';
+      cell.dataset.x = x;
+      cell.dataset.y = y;
+
+      if (starPoints.some(([sx, sy]) => sx === x && sy === y)) {
+        cell.classList.add('star');
+      }
+
+      // 如果有棋子，渲染棋子
+      if (board[y][x] !== EMPTY) {
+        const piece = document.createElement('div');
+        piece.className = `piece ${board[y][x] === BLACK ? 'black' : 'white'}`;
+        cell.appendChild(piece);
+      }
+
+      cell.addEventListener('click', () => handleCellClick(x, y));
+      boardElement.appendChild(cell);
+    }
+  }
+}
+
+// ==================== 游戏核心逻辑 ====================
 
 // 星位点坐标
 const starPoints = [
@@ -58,6 +210,9 @@ const starPoints = [
  * 初始化游戏
  */
 function initGame() {
+  // 清除存档（开始新游戏时）
+  clearSave();
+
   board = Array(BOARD_SIZE).fill(null).map(() => Array(BOARD_SIZE).fill(EMPTY));
   currentPlayer = BLACK;
   gameOver = false;
@@ -119,14 +274,21 @@ async function makeMove(x, y) {
     messageElement.textContent = gameMode === 'pve' && currentPlayer === aiPlayer
       ? 'AI 获胜！'
       : `${winner} 获胜！`;
+    // 游戏结束时清除存档
+    clearSave();
     return;
   }
 
   if (checkDraw()) {
     gameOver = true;
     messageElement.textContent = '平局！';
+    // 游戏结束时清除存档
+    clearSave();
     return;
   }
+
+  // 每次落子后保存游戏进度
+  saveGame();
 
   currentPlayer = currentPlayer === BLACK ? WHITE : BLACK;
   updatePlayerDisplay();
@@ -595,8 +757,17 @@ restartButton.addEventListener('click', initGame);
 
 document.getElementById('back-to-menu').addEventListener('click', showModeSelection);
 
+
 // 悔棋按钮事件
 document.getElementById('undo').addEventListener('click', undoMove);
 
-// 初始化显示模式选择界面
-showModeSelection();
+// 恢复游戏相关事件
+document.getElementById('restore-btn').addEventListener('click', restoreGame);
+document.getElementById('new-game-btn').addEventListener('click', discardSave);
+
+// 初始化：检查是否有存档
+if (hasValidSave()) {
+  showRestorePrompt();
+} else {
+  showModeSelection();
+}
