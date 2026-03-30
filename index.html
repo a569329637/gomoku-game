@@ -42,12 +42,44 @@
           <button class="btn difficulty-btn" data-difficulty="hard">困难</button>
         </div>
       </div>
+      <!-- 计时模式选择 -->
+      <div class="timer-selection">
+        <h3>计时模式</h3>
+        <div class="timer-mode-buttons">
+          <button class="btn timer-mode-btn active" data-timer="none">无限制</button>
+          <button class="btn timer-mode-btn" data-timer="total">总时间</button>
+          <button class="btn timer-mode-btn" data-timer="per-move">每步限时</button>
+        </div>
+        <div id="time-config" class="time-config hidden">
+          <select id="time-select" class="time-select">
+            <option value="5min">5 分钟</option>
+            <option value="10min" selected>10 分钟</option>
+            <option value="15min">15 分钟</option>
+          </select>
+        </div>
+        <div id="per-move-config" class="time-config hidden">
+          <select id="per-move-select" class="time-select">
+            <option value="30s">30 秒</option>
+            <option value="60s">60 秒</option>
+            <option value="90s">90 秒</option>
+          </select>
+        </div>
+      </div>
+      <!-- 统计数据展示 -->
+      <div class="stats-panel">
+        <h3>游戏统计</h3>
+        <div id="stats-display" class="stats-display"></div>
+        <button id="reset-stats" class="btn btn-secondary btn-small">重置统计</button>
+      </div>
     </div>
 
     <!-- 游戏界面 -->
     <div id="game-area" class="game-area hidden">
+      <!-- 计时器显示 -->
+      <div id="timer-display" class="timer-display hidden"></div>
       <div class="game-info">
         <div class="current-player">当前玩家: <span id="player">黑棋</span></div>
+        <div id="game-stats" class="game-stats"></div>
         <div id="ai-thinking" class="ai-thinking hidden">AI 思考中...</div>
         <button id="undo" class="btn btn-warning">悔棋</button>
         <button id="restart" class="btn">重新开始</button>
