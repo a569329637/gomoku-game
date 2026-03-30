@@ -99,6 +99,362 @@ const ThemeManager = {
   }
 };
 
+// ==================== 计时器管理器 ====================
+
+/**
+ * 计时器管理器
+ * 支持总时间模式和每步时间模式
+ */
+const TimerManager = {
+  // 计时模式: 'none' | 'total' | 'per-move'
+  mode: 'none',
+
+  // 总时间模式配置（毫秒）
+  totalConfig: {
+    '5min': 5 * 60 * 1000,
+    '10min': 10 * 60 * 1000,
+    '15min': 15 * 60 * 1000
+  },
+
+  // 每步时间配置（毫秒）
+  perMoveConfig: {
+    '30s': 30 * 1000,
+    '60s': 60 * 1000,
+    '90s': 90 * 1000
+  },
+
+  // 当前选择的时间配置
+  selectedTime: '10min',
+
+  // 玩家剩余时间（毫秒）
+  blackTime: 0,
+  whiteTime: 0,
+
+  // 每步剩余时间
+  perMoveTime: 0,
+
+  // 计时器 ID
+  timerId: null,
+
+  // 是否运行中
+  isRunning: false,
+
+  // 游戏开始时间戳
+  lastTickTime: 0,
+
+  /**
+   * 初始化计时器
+   * @param {string} mode - 计时模式
+   * @param {string} timeConfig - 时间配置
+   */
+  init(mode = 'none', timeConfig = '10min') {
+    this.mode = mode;
+    this.selectedTime = timeConfig;
+    this.stop();
+    this.reset();
+    this.updateDisplay();
+  },
+
+  /**
+   * 重置计时器
+   */
+  reset() {
+    if (this.mode === 'total') {
+      this.blackTime = this.totalConfig[this.selectedTime] || this.totalConfig['10min'];
+      this.whiteTime = this.totalConfig[this.selectedTime] || this.totalConfig['10min'];
+    } else if (this.mode === 'per-move') {
+      this.perMoveTime = this.perMoveConfig[this.selectedTime] || this.perMoveConfig['30s'];
+    }
+    this.updateDisplay();
+  },
+
+  /**
+   * 开始计时
+   * @param {number} player - 当前玩家
+   */
+  start(player) {
+    if (this.mode === 'none' || this.isRunning) return;
+
+    this.isRunning = true;
+    this.lastTickTime = Date.now();
+
+    if (this.mode === 'per-move') {
+      // 每步模式：重置每步时间
+      this.perMoveTime = this.perMoveConfig[this.selectedTime] || this.perMoveConfig['30s'];
+    }
+
+    this.timerId = setInterval(() => this.tick(player), 100);
+  },
+
+  /**
+   * 停止计时
+   */
+  stop() {
+    if (this.timerId) {
+      clearInterval(this.timerId);
+      this.timerId = null;
+    }
+    this.isRunning = false;
+  },
+
+  /**
+   * 计时
+   * @param {number} player - 当前玩家
+   */
+  tick(player) {
+    const now = Date.now();
+    const elapsed = now - this.lastTickTime;
+    this.lastTickTime = now;
+
+    if (this.mode === 'total') {
+      // 总时间模式
+      if (player === BLACK) {
+        this.blackTime = Math.max(0, this.blackTime - elapsed);
+      } else {
+        this.whiteTime = Math.max(0, this.whiteTime - elapsed);
+      }
+
+      // 检查超时
+      if (this.blackTime <= 0 || this.whiteTime <= 0) {
+        this.handleTimeout(this.blackTime <= 0 ? BLACK : WHITE);
+      }
+    } else if (this.mode === 'per-move') {
+      // 每步时间模式
+      this.perMoveTime = Math.max(0, this.perMoveTime - elapsed);
+
+      if (this.perMoveTime <= 0) {
+        this.handleTimeout(player);
+      }
+    }
+
+    this.updateDisplay();
+  },
+
+  /**
+   * 切换玩家
+   * @param {number} newPlayer - 新的当前玩家
+   */
+  switchPlayer(newPlayer) {
+    if (this.mode === 'none') return;
+
+    this.stop();
+
+    if (this.mode === 'per-move') {
+      // 每步模式：重置每步时间
+      this.perMoveTime = this.perMoveConfig[this.selectedTime] || this.perMoveConfig['30s'];
+    }
+
+    this.start(newPlayer);
+  },
+
+  /**
+   * 处理超时
+   * @param {number} timeoutPlayer - 超时的玩家
+   */
+  handleTimeout(timeoutPlayer) {
+    this.stop();
+
+    // 触发超时事件
+    if (this.onTimeout) {
+      this.onTimeout(timeoutPlayer);
+    }
+  },
+
+  /**
+   * 超时回调函数
+   */
+  onTimeout: null,
+
+  /**
+   * 格式化时间显示
+   * @param {number} ms - 毫秒数
+   * @returns {string} 格式化的时间字符串
+   */
+  formatTime(ms) {
+    const totalSeconds = Math.ceil(ms / 1000);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  },
+
+  /**
+   * 更新界面显示
+   */
+  updateDisplay() {
+    const timerDisplay = document.getElementById('timer-display');
+    if (!timerDisplay || this.mode === 'none') {
+      if (timerDisplay) timerDisplay.classList.add('hidden');
+      return;
+    }
+
+    timerDisplay.classList.remove('hidden');
+
+    if (this.mode === 'total') {
+      timerDisplay.innerHTML = `
+        <div class="timer-player ${currentPlayer === BLACK ? 'active' : ''}">
+          <span class="timer-label">黑棋</span>
+          <span class="timer-time ${this.blackTime < 30000 ? 'warning' : ''}">${this.formatTime(this.blackTime)}</span>
+        </div>
+        <div class="timer-vs">VS</div>
+        <div class="timer-player ${currentPlayer === WHITE ? 'active' : ''}">
+          <span class="timer-label">白棋</span>
+          <span class="timer-time ${this.whiteTime < 30000 ? 'warning' : ''}">${this.formatTime(this.whiteTime)}</span>
+        </div>
+      `;
+    } else if (this.mode === 'per-move') {
+      timerDisplay.innerHTML = `
+        <div class="timer-per-move">
+          <span class="timer-label">剩余时间</span>
+          <span class="timer-time ${this.perMoveTime < 10000 ? 'warning' : ''}">${this.formatTime(this.perMoveTime)}</span>
+        </div>
+      `;
+    }
+  },
+
+  /**
+   * 获取当前计时模式
+   * @returns {string} 计时模式
+   */
+  getMode() {
+    return this.mode;
+  }
+};
+
+// ==================== 统计管理器 ====================
+
+/**
+ * 统计管理器
+ * 记录游戏统计数据（胜场、平局、总对局数）
+ */
+const StatsManager = {
+  // 存储键名
+  STORAGE_KEY: 'gomoku_stats',
+
+  // 统计数据
+  stats: {
+    blackWins: 0,
+    whiteWins: 0,
+    draws: 0,
+    totalGames: 0
+  },
+
+  /**
+   * 初始化统计数据
+   */
+  init() {
+    this.load();
+    this.updateDisplay();
+  },
+
+  /**
+   * 从 localStorage 加载统计数据
+   */
+  load() {
+    try {
+      const data = localStorage.getItem(this.STORAGE_KEY);
+      if (data) {
+        this.stats = JSON.parse(data);
+      }
+    } catch (e) {
+      console.error('加载统计数据失败:', e);
+    }
+  },
+
+  /**
+   * 保存统计数据到 localStorage
+   */
+  save() {
+    try {
+      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.stats));
+    } catch (e) {
+      console.error('保存统计数据失败:', e);
+    }
+  },
+
+  /**
+   * 记录胜利
+   * @param {number} winner - 获胜方 (BLACK 或 WHITE)
+   */
+  recordWin(winner) {
+    if (winner === BLACK) {
+      this.stats.blackWins++;
+    } else {
+      this.stats.whiteWins++;
+    }
+    this.stats.totalGames++;
+    this.save();
+    this.updateDisplay();
+  },
+
+  /**
+   * 记录平局
+   */
+  recordDraw() {
+    this.stats.draws++;
+    this.stats.totalGames++;
+    this.save();
+    this.updateDisplay();
+  },
+
+  /**
+   * 重置统计数据
+   */
+  reset() {
+    this.stats = {
+      blackWins: 0,
+      whiteWins: 0,
+      draws: 0,
+      totalGames: 0
+    };
+    this.save();
+    this.updateDisplay();
+  },
+
+  /**
+   * 获取统计数据
+   * @returns {Object} 统计数据对象
+   */
+  getStats() {
+    return { ...this.stats };
+  },
+
+  /**
+   * 更新界面显示
+   */
+  updateDisplay() {
+    // 更新模式选择界面的统计显示
+    const statsDisplay = document.getElementById('stats-display');
+    if (statsDisplay) {
+      statsDisplay.innerHTML = `
+        <div class="stats-item">
+          <span class="stats-label">黑棋胜</span>
+          <span class="stats-value">${this.stats.blackWins}</span>
+        </div>
+        <div class="stats-item">
+          <span class="stats-label">白棋胜</span>
+          <span class="stats-value">${this.stats.whiteWins}</span>
+        </div>
+        <div class="stats-item">
+          <span class="stats-label">平局</span>
+          <span class="stats-value">${this.stats.draws}</span>
+        </div>
+        <div class="stats-item">
+          <span class="stats-label">总对局</span>
+          <span class="stats-value">${this.stats.totalGames}</span>
+        </div>
+      `;
+    }
+
+    // 更新游戏界面的统计显示
+    const gameStats = document.getElementById('game-stats');
+    if (gameStats) {
+      gameStats.innerHTML = `
+        <span class="game-stats-item">黑${this.stats.blackWins} : 白${this.stats.whiteWins}</span>
+      `;
+    }
+  }
+};
+
 // ==================== 音效管理器 ====================
 
 /**
@@ -210,6 +566,8 @@ let gameMode = 'pvp'; // 'pvp' 或 'pve'
 let difficulty = 'medium'; // 'easy', 'medium', 'hard'
 let aiPlayer = WHITE; // AI 执白棋
 let moveHistory = []; // 落子历史记录
+let timerMode = 'none'; // 'none', 'total', 'per-move'
+let timerConfig = '10min'; // 默认时间配置
 
 // AI 搜索深度配置
 const AI_DEPTH = {
@@ -414,6 +772,13 @@ function initGame() {
   messageElement.textContent = '';
   aiThinkingElement.classList.add('hidden');
 
+  // 初始化计时器
+  const timeConfig = timerMode === 'per-move' ?
+    document.getElementById('per-move-select')?.value || '30s' :
+    document.getElementById('time-select')?.value || '10min';
+  TimerManager.init(timerMode, timeConfig);
+  TimerManager.onTimeout = handleTimeout;
+
   boardElement.innerHTML = '';
 
   for (let y = 0; y < BOARD_SIZE; y++) {
@@ -434,6 +799,11 @@ function initGame() {
 
   updatePlayerDisplay();
   updateSoundButton();
+
+  // 开始计时
+  if (timerMode !== 'none') {
+    TimerManager.start(currentPlayer);
+  }
 }
 
 /**
@@ -467,6 +837,8 @@ async function makeMove(x, y) {
   const winningPieces = checkWin(x, y);
   if (winningPieces) {
     gameOver = true;
+    // 停止计时器
+    TimerManager.stop();
     highlightWinningPieces(winningPieces);
     const winner = currentPlayer === BLACK ? '黑棋' : '白棋';
     messageElement.textContent = gameMode === 'pve' && currentPlayer === aiPlayer
@@ -474,6 +846,8 @@ async function makeMove(x, y) {
       : `${winner} 获胜！`;
     // 游戏结束时清除存档
     clearSave();
+    // 记录统计数据
+    StatsManager.recordWin(currentPlayer);
     // 播放获胜音效
     SoundManager.playWin();
     return;
@@ -481,9 +855,13 @@ async function makeMove(x, y) {
 
   if (checkDraw()) {
     gameOver = true;
+    // 停止计时器
+    TimerManager.stop();
     messageElement.textContent = '平局！';
     // 游戏结束时清除存档
     clearSave();
+    // 记录统计数据
+    StatsManager.recordDraw();
     // 播放平局音效
     SoundManager.playDraw();
     return;
@@ -495,6 +873,9 @@ async function makeMove(x, y) {
   currentPlayer = currentPlayer === BLACK ? WHITE : BLACK;
   updatePlayerDisplay();
 
+  // 切换计时器
+  TimerManager.switchPlayer(currentPlayer);
+
   // 人机模式下，AI 执行下一步
   if (gameMode === 'pve' && currentPlayer === aiPlayer && !gameOver) {
     await aiMove();
@@ -502,10 +883,30 @@ async function makeMove(x, y) {
 }
 
 /**
+ * 处理超时
+ * @param {number} timeoutPlayer - 超时的玩家
+ */
+function handleTimeout(timeoutPlayer) {
+  gameOver = true;
+  clearSave();
+
+  const winner = timeoutPlayer === BLACK ? WHITE : BLACK;
+  const winnerName = winner === BLACK ? '黑棋' : '白棋';
+  const loserName = timeoutPlayer === BLACK ? '黑棋' : '白棋';
+
+  messageElement.textContent = `${loserName} 超时，${winnerName} 获胜！`;
+  StatsManager.recordWin(winner);
+  SoundManager.playWin();
+}
+
+/**
  * AI 执行落子
  */
 async function aiMove() {
   aiThinkingElement.classList.remove('hidden');
+
+  // AI 思考时暂停玩家计时（总时间模式下）
+  // 注意：每步时间模式下不需要暂停，因为 AI 也要计算时间
 
   // 使用 setTimeout 让 UI 有时间更新
   await new Promise(resolve => setTimeout(resolve, 100));
@@ -886,6 +1287,8 @@ function showGameArea() {
  * 显示模式选择界面
  */
 function showModeSelection() {
+  // 停止计时器
+  TimerManager.stop();
   gameArea.classList.add('hidden');
   modeSelection.classList.remove('hidden');
   difficultySelection.classList.add('hidden');
@@ -985,10 +1388,49 @@ if (soundToggleBtn) {
   });
 }
 
+// 重置统计按钮事件
+const resetStatsBtn = document.getElementById('reset-stats');
+if (resetStatsBtn) {
+  resetStatsBtn.addEventListener('click', () => {
+    if (confirm('确定要重置所有统计数据吗？')) {
+      StatsManager.reset();
+    }
+  });
+}
+
+// 计时模式选择事件
+document.querySelectorAll('.timer-mode-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    // 更新按钮状态
+    document.querySelectorAll('.timer-mode-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    timerMode = btn.dataset.timer;
+
+    // 显示/隐藏时间配置
+    const timeConfig = document.getElementById('time-config');
+    const perMoveConfig = document.getElementById('per-move-config');
+
+    if (timerMode === 'total') {
+      timeConfig?.classList.remove('hidden');
+      perMoveConfig?.classList.add('hidden');
+    } else if (timerMode === 'per-move') {
+      timeConfig?.classList.add('hidden');
+      perMoveConfig?.classList.remove('hidden');
+    } else {
+      timeConfig?.classList.add('hidden');
+      perMoveConfig?.classList.add('hidden');
+    }
+  });
+});
+
 // ==================== 初始化 ====================
 
 // 初始化主题管理器
 ThemeManager.init();
+
+// 初始化统计管理器
+StatsManager.init();
 
 // 初始化：检查是否有存档
 if (hasValidSave()) {

@@ -666,3 +666,270 @@ h1 {
 [data-theme="dark"] .btn-theme-toggle:hover {
   background: rgba(255, 255, 255, 0.2);
 }
+
+/* ==================== 统计面板样式 ==================== */
+
+.stats-panel {
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border-color);
+}
+
+.stats-panel h3 {
+  color: var(--text-secondary);
+  margin-bottom: 15px;
+  font-size: 1.1rem;
+}
+
+.stats-display {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 15px;
+}
+
+.stats-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 15px;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 8px;
+  min-width: 60px;
+}
+
+[data-theme="dark"] .stats-item {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.stats-label {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 5px;
+}
+
+.stats-value {
+  font-size: 1.4rem;
+  font-weight: bold;
+  color: var(--text-primary);
+}
+
+.btn-small {
+  padding: 6px 16px;
+  font-size: 0.85rem;
+}
+
+/* 游戏界面统计显示 */
+.game-stats {
+  background: var(--card-bg);
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+}
+
+.game-stats-item {
+  font-weight: 500;
+}
+
+/* 移动端统计面板适配 */
+@media screen and (max-width: 400px) {
+  .stats-panel {
+    margin-top: 20px;
+    padding-top: 15px;
+  }
+
+  .stats-display {
+    gap: 10px;
+  }
+
+  .stats-item {
+    padding: 8px 12px;
+    min-width: 50px;
+  }
+
+  .stats-label {
+    font-size: 0.75rem;
+  }
+
+  .stats-value {
+    font-size: 1.2rem;
+  }
+
+  .btn-small {
+    padding: 5px 12px;
+    font-size: 0.8rem;
+  }
+
+  .game-stats {
+    padding: 6px 12px;
+    font-size: 0.85rem;
+  }
+}
+
+/* ==================== 计时器样式 ==================== */
+
+/* 计时模式选择 */
+.timer-selection {
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 1px solid var(--border-color);
+}
+
+.timer-selection h3 {
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+  font-size: 1rem;
+}
+
+.timer-mode-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.timer-mode-btn {
+  padding: 8px 16px;
+  font-size: 0.9rem;
+  background: var(--card-bg);
+  color: var(--text-primary);
+  border: 2px solid var(--border-color);
+}
+
+.timer-mode-btn:hover {
+  border-color: var(--btn-primary);
+}
+
+.timer-mode-btn.active {
+  background: var(--btn-primary);
+  color: white;
+  border-color: var(--btn-primary);
+}
+
+.time-config {
+  margin-top: 12px;
+}
+
+.time-select {
+  padding: 8px 16px;
+  font-size: 0.9rem;
+  border-radius: 8px;
+  border: 2px solid var(--border-color);
+  background: var(--card-bg);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: border-color 0.3s;
+}
+
+.time-select:hover {
+  border-color: var(--btn-primary);
+}
+
+.time-select:focus {
+  outline: none;
+  border-color: var(--btn-primary);
+}
+
+/* 游戏界面计时器显示 */
+.timer-display {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 15px;
+  padding: 12px 20px;
+  background: var(--card-bg);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px var(--card-shadow);
+}
+
+.timer-player {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 16px;
+  border-radius: 8px;
+  opacity: 0.7;
+  transition: all 0.3s ease;
+}
+
+.timer-player.active {
+  opacity: 1;
+  background: rgba(76, 175, 80, 0.1);
+}
+
+.timer-label {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.timer-time {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: var(--text-primary);
+  font-family: 'Courier New', monospace;
+}
+
+.timer-time.warning {
+  color: #f44336;
+  animation: timer-warning 0.5s ease-in-out infinite alternate;
+}
+
+@keyframes timer-warning {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.05);
+  }
+}
+
+.timer-vs {
+  font-size: 1rem;
+  color: var(--text-muted);
+  font-weight: bold;
+}
+
+/* 每步计时模式 */
+.timer-per-move {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* 移动端计时器适配 */
+@media screen and (max-width: 400px) {
+  .timer-selection {
+    margin-top: 15px;
+    padding-top: 10px;
+  }
+
+  .timer-mode-buttons {
+    gap: 8px;
+  }
+
+  .timer-mode-btn {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+  }
+
+  .timer-display {
+    gap: 12px;
+    padding: 10px 15px;
+  }
+
+  .timer-player {
+    padding: 6px 12px;
+  }
+
+  .timer-time {
+    font-size: 1.2rem;
+  }
+
+  .timer-label {
+    font-size: 0.75rem;
+  }
+}
